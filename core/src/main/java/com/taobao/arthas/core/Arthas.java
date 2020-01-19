@@ -86,6 +86,7 @@ public class Arthas {
             }
 
             Properties targetSystemProperties = virtualMachine.getSystemProperties();
+            // get java version
             String targetJavaVersion = JavaVersionUtils.javaVersionStr(targetSystemProperties);
             String currentJavaVersion = JavaVersionUtils.javaVersionStr();
             if (targetJavaVersion != null && currentJavaVersion != null) {
