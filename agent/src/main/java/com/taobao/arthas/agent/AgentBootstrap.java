@@ -23,9 +23,14 @@ public class AgentBootstrap {
     private static final String IS_BIND = "isBind";
     private static final String BIND = "bind";
 
+    /**
+     * 日志输出文件
+     */
     private static PrintStream ps = System.err;
+
     static {
         try {
+            // 创建日志目录
             File arthasLogDir = new File(System.getProperty("user.home") + File.separator + "logs" + File.separator
                     + "arthas" + File.separator);
             if (!arthasLogDir.exists()) {
@@ -63,7 +68,7 @@ public class AgentBootstrap {
     }
 
     /**
-     * 让下次再次启动时有机会重新加载
+     * 让下次再次启动时有机会重新加载 反射调用
      */
     public synchronized static void resetArthasClassLoader() {
         arthasClassLoader = null;
@@ -74,12 +79,14 @@ public class AgentBootstrap {
         ClassLoader parent = ClassLoader.getSystemClassLoader().getParent();
         Class<?> spyClass = null;
         if (parent != null) {
+            // try load
             try {
                 parent.loadClass("java.arthas.Spy");
             } catch (Throwable e) {
                 // ignore
             }
         }
+        // not load. append jar
         if (spyClass == null) {
             inst.appendToBootstrapClassLoaderSearch(new JarFile(spyJarFile));
         }
@@ -101,7 +108,7 @@ public class AgentBootstrap {
 
     private static synchronized void main(String args, final Instrumentation inst) {
         try {
-            ps.println("Arthas server agent start...");
+            ps.println("Arthas server agent start...args = " + args);
             // 传递的args参数分两个部分:agentJar路径和agentArgs, 分别是Agent的JAR包路径和期望传递到服务端的参数
             args = decodeArg(args);
             int index = args.indexOf(';');
@@ -153,18 +160,36 @@ public class AgentBootstrap {
         }
     }
 
+    /**
+     * 启动服务
+     *
+     * @param inst
+     * @param agentLoader
+     * @param args
+     * @throws Throwable
+     * @see com.taobao.arthas.core.server.ArthasBootstrap
+     */
     private static void bind(Instrumentation inst, ClassLoader agentLoader, String args) throws Throwable {
         /**
+         * @see com.taobao.arthas.core.server.ArthasBootstrap#getInstance(java.lang.instrument.Instrumentation)
          * <pre>
          * ArthasBootstrap bootstrap = ArthasBootstrap.getInstance(inst);
          * </pre>
          */
         Class<?> bootstrapClass = agentLoader.loadClass(ARTHAS_BOOTSTRAP);
         Object bootstrap = bootstrapClass.getMethod(GET_INSTANCE, Instrumentation.class).invoke(null, inst);
+        /**
+         * call isBind()
+         * @see com.taobao.arthas.core.server.ArthasBootstrap#isBind()
+         */
         boolean isBind = (Boolean) bootstrapClass.getMethod(IS_BIND).invoke(bootstrap);
         if (!isBind) {
             try {
                 ps.println("Arthas start to bind...");
+                /**
+                 * do bind server
+                 * @see com.taobao.arthas.core.server.ArthasBootstrap#bind(com.taobao.arthas.core.config.Configure)
+                 */
                 bootstrapClass.getMethod(BIND, String.class).invoke(bootstrap, args);
                 ps.println("Arthas server bind success.");
                 return;

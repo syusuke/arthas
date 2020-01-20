@@ -1,5 +1,15 @@
 package com.taobao.arthas.core.command.klass100;
 
+import com.taobao.arthas.core.command.Constants;
+import com.taobao.arthas.core.shell.cli.Completion;
+import com.taobao.arthas.core.shell.cli.CompletionUtils;
+import com.taobao.arthas.core.shell.command.AnnotatedCommand;
+import com.taobao.arthas.core.shell.command.CommandProcess;
+import com.taobao.arthas.core.util.LogUtil;
+import com.taobao.middleware.cli.annotations.*;
+import com.taobao.middleware.logger.Logger;
+import org.objectweb.asm.ClassReader;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -9,21 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.taobao.arthas.core.util.LogUtil;
-import com.taobao.middleware.logger.Logger;
-import org.objectweb.asm.ClassReader;
-
-import com.taobao.arthas.core.command.Constants;
-import com.taobao.arthas.core.shell.cli.Completion;
-import com.taobao.arthas.core.shell.cli.CompletionUtils;
-import com.taobao.arthas.core.shell.command.AnnotatedCommand;
-import com.taobao.arthas.core.shell.command.CommandProcess;
-import com.taobao.middleware.cli.annotations.Argument;
-import com.taobao.middleware.cli.annotations.Description;
-import com.taobao.middleware.cli.annotations.Name;
-import com.taobao.middleware.cli.annotations.Option;
-import com.taobao.middleware.cli.annotations.Summary;
 
 /**
  * Redefine Classes.
@@ -114,6 +109,7 @@ public class RedefineCommand extends AnnotatedCommand {
         List<ClassDefinition> definitions = new ArrayList<ClassDefinition>();
         for (Class<?> clazz : inst.getAllLoadedClasses()) {
             if (bytesMap.containsKey(clazz.getName())) {
+                // 当前class loader 的 HashCode
                 if (hashCode != null && !Integer.toHexString(clazz.getClassLoader().hashCode()).equals(hashCode)) {
                     continue;
                 }

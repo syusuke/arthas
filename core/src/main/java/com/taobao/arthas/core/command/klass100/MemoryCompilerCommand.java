@@ -1,12 +1,5 @@
 package com.taobao.arthas.core.command.klass100;
 
-import java.io.File;
-import java.lang.instrument.Instrumentation;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import com.taobao.arthas.compiler.DynamicCompiler;
 import com.taobao.arthas.core.command.Constants;
 import com.taobao.arthas.core.shell.cli.Completion;
@@ -17,12 +10,15 @@ import com.taobao.arthas.core.util.ClassLoaderUtils;
 import com.taobao.arthas.core.util.FileUtils;
 import com.taobao.arthas.core.util.LogUtil;
 import com.taobao.arthas.core.util.affect.RowAffect;
-import com.taobao.middleware.cli.annotations.Argument;
-import com.taobao.middleware.cli.annotations.Description;
-import com.taobao.middleware.cli.annotations.Name;
-import com.taobao.middleware.cli.annotations.Option;
-import com.taobao.middleware.cli.annotations.Summary;
+import com.taobao.middleware.cli.annotations.*;
 import com.taobao.middleware.logger.Logger;
+
+import java.io.File;
+import java.lang.instrument.Instrumentation;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  *
@@ -103,6 +99,7 @@ public class MemoryCompilerCommand extends AnnotatedCommand {
                 dynamicCompiler.addSource(name, sourceCode);
             }
 
+            // classname: class file content
             Map<String, byte[]> byteCodes = dynamicCompiler.buildByteCodes();
 
             File outputDir = null;
@@ -113,6 +110,8 @@ public class MemoryCompilerCommand extends AnnotatedCommand {
             }
 
             process.write("Memory compiler output:\n");
+
+            // 编译生成 .class 文件
             for (Entry<String, byte[]> entry : byteCodes.entrySet()) {
                 File byteCodeFile = new File(outputDir, entry.getKey().replace('.', '/') + ".class");
                 FileUtils.writeByteArrayToFile(byteCodeFile, entry.getValue());

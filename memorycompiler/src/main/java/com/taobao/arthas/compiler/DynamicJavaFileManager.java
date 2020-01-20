@@ -1,16 +1,11 @@
 package com.taobao.arthas.compiler;
 
+import javax.tools.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import javax.tools.FileObject;
-import javax.tools.ForwardingJavaFileManager;
-import javax.tools.JavaFileManager;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardLocation;
 
 public class DynamicJavaFileManager extends ForwardingJavaFileManager<JavaFileManager> {
     private static final String[] superLocationNames = { StandardLocation.PLATFORM_CLASS_PATH.name(),
@@ -32,12 +27,12 @@ public class DynamicJavaFileManager extends ForwardingJavaFileManager<JavaFileMa
     public JavaFileObject getJavaFileForOutput(JavaFileManager.Location location, String className,
                     JavaFileObject.Kind kind, FileObject sibling) throws IOException {
 
+        // 已经存在了.
         for (MemoryByteCode byteCode : byteCodes) {
             if (byteCode.getClassName().equals(className)) {
                 return byteCode;
             }
         }
-
         MemoryByteCode innerClass = new MemoryByteCode(className);
         byteCodes.add(innerClass);
         classLoader.registerCompiledSource(innerClass);

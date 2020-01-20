@@ -92,7 +92,7 @@ public class ArthasBootstrap {
         Method throwInvoke = adviceWeaverClass.getMethod(AdviceWeaver.THROW_INVOKE, int.class, String.class, String.class, String.class, int.class);
         Spy.init(AdviceWeaver.class.getClassLoader(), onBefore, onReturn, onThrows, beforeInvoke, afterInvoke, throwInvoke);
     }
-    
+
     public void bind(String args) throws Throwable {
         initSpy();
         Configure configure = Configure.toConfigure(args);
@@ -121,14 +121,14 @@ public class ArthasBootstrap {
                 tunnelClient.setTunnelServerUrl(configure.getTunnelServer());
                 // ws://127.0.0.1:8563/ws
                 String host = "127.0.0.1";
-                if(configure.getIp() != null) {
+                if (configure.getIp() != null) {
                     host = configure.getIp();
                 }
                 URI uri = new URI("ws", null, host, configure.getHttpPort(), "/ws", null, null);
                 tunnelClient.setLocalServerUrl(uri.toString());
                 ChannelFuture channelFuture = tunnelClient.start();
                 channelFuture.await(10, TimeUnit.SECONDS);
-                if(channelFuture.isSuccess()) {
+                if (channelFuture.isSuccess()) {
                     agentId = tunnelClient.getId();
                 }
             }
@@ -138,15 +138,16 @@ public class ArthasBootstrap {
 
         try {
             ShellServerOptions options = new ShellServerOptions()
-                            .setInstrumentation(instrumentation)
-                            .setPid(PidUtils.currentLongPid())
-                            .setSessionTimeout(configure.getSessionTimeout() * 1000);
+                    .setInstrumentation(instrumentation)
+                    .setPid(PidUtils.currentLongPid())
+                    .setSessionTimeout(configure.getSessionTimeout() * 1000);
 
             if (agentId != null) {
                 Map<String, String> welcomeInfos = new HashMap<String, String>();
                 welcomeInfos.put("id", agentId);
                 options.setWelcomeMessage(ArthasBanner.welcome(welcomeInfos));
             }
+            // option and bootstrap
             shellServer = new ShellServerImpl(options, this);
             BuiltinCommandPack builtinCommands = new BuiltinCommandPack();
             List<CommandResolver> resolvers = new ArrayList<CommandResolver>();
@@ -154,13 +155,13 @@ public class ArthasBootstrap {
             // TODO: discover user provided command resolver
             if (configure.getTelnetPort() > 0) {
                 shellServer.registerTermServer(new HttpTelnetTermServer(configure.getIp(), configure.getTelnetPort(),
-                                options.getConnectionTimeout()));
+                        options.getConnectionTimeout()));
             } else {
                 logger.info("telnet port is {}, skip bind telnet server.", configure.getTelnetPort());
             }
             if (configure.getHttpPort() > 0) {
                 shellServer.registerTermServer(new HttpTermServer(configure.getIp(), configure.getHttpPort(),
-                                options.getConnectionTimeout()));
+                        options.getConnectionTimeout()));
             } else {
                 logger.info("http port is {}, skip bind http server.", configure.getHttpPort());
             }
@@ -180,7 +181,7 @@ public class ArthasBootstrap {
             UserStatUtil.setStatUrl(configure.getStatUrl());
             UserStatUtil.arthasStart();
 
-            logger.info("as-server started in {} ms", System.currentTimeMillis() - start );
+            logger.info("as-server started in {} ms", System.currentTimeMillis() - start);
         } catch (Throwable e) {
             logger.error(null, "Error during bind to port " + configure.getTelnetPort(), e);
             if (shellServer != null) {
@@ -222,7 +223,7 @@ public class ArthasBootstrap {
     }
 
     /**
-     * 单例
+     * 单例 (反射调用)
      *
      * @param instrumentation JVM增强
      * @return ArthasServer单例
@@ -233,6 +234,7 @@ public class ArthasBootstrap {
         }
         return arthasBootstrap;
     }
+
     /**
      * @return ArthasServer单例
      */
