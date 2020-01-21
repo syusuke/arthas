@@ -1,25 +1,5 @@
 package com.taobao.arthas.boot;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.security.CodeSource;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.InputMismatchException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
 import com.taobao.arthas.common.AnsiLog;
 import com.taobao.arthas.common.JavaVersionUtils;
 import com.taobao.arthas.common.SocketUtils;
@@ -27,12 +7,20 @@ import com.taobao.arthas.common.UsageRender;
 import com.taobao.middleware.cli.CLI;
 import com.taobao.middleware.cli.CommandLine;
 import com.taobao.middleware.cli.UsageMessageFormatter;
-import com.taobao.middleware.cli.annotations.Argument;
-import com.taobao.middleware.cli.annotations.CLIConfigurator;
-import com.taobao.middleware.cli.annotations.Description;
-import com.taobao.middleware.cli.annotations.Name;
-import com.taobao.middleware.cli.annotations.Option;
-import com.taobao.middleware.cli.annotations.Summary;
+import com.taobao.middleware.cli.annotations.*;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.security.CodeSource;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * @author hengyunabc 2018-10-26
@@ -275,6 +263,7 @@ public class Bootstrap {
         CommandLine commandLine = cli.parse(Arrays.asList(args));
 
         try {
+            // 参数注入
             CLIConfigurator.inject(commandLine, bootstrap);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -329,10 +318,12 @@ public class Bootstrap {
             }
         }
 
+        // PID
         long pid = bootstrap.getPid();
         // select pid
         if (pid < 0) {
             try {
+                // select PID
                 pid = ProcessUtils.select(bootstrap.isVerbose(), telnetPortPid);
             } catch (InputMismatchException e) {
                 System.out.println("Please input an integer to select pid.");
